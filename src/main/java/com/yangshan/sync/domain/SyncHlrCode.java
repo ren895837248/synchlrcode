@@ -180,37 +180,39 @@ public class SyncHlrCode {
 			
 			Connection connMysql= null;
 			PreparedStatement psMysql = null;
-			
+
 			try {
 				logger.debug("删除mysql数据库td_m_moffice表..");
 				connMysql = MysqlUtil.getConnection();
 				connMysql.setAutoCommit(false);
 				psMysql = connMysql.prepareStatement("delete from td_m_moffice");
 				psMysql.executeUpdate();
-				
-				
+
+
 				connOra = OraclelUtil.getConnection();
 				psOra = connOra.prepareStatement(sql);
 				rsOra = psOra.executeQuery();
-				
-				
+
+
 				String inserSql = "insert into td_m_moffice values(?,?,?)";
 				psMysql = connMysql.prepareStatement(inserSql);
-				
-				int i=0;
+
+				int i = 0;
 				while (rsOra.next()) {
 					psMysql.setString(1, rsOra.getString(1));
 					psMysql.setString(2, rsOra.getString(2));
 					psMysql.setString(3, rsOra.getString(3));
 					psMysql.addBatch();
 					i++;
-					if(i%100==0){
+					if (i % 100 == 0) {
 						psMysql.executeBatch();
 						psMysql.clearBatch();
 					}
 				}
+
 				psMysql.executeBatch();
 				connMysql.commit();
+				logger.debug("批量插入完成...");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			} finally {
